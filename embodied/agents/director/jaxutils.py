@@ -8,7 +8,7 @@ import optax
 from tensorflow_probability.substrates import jax as tfp
 from flax.core import freeze, FrozenDict
 
-from . import ninjax as nj
+import ninjax as nj
 
 tfd = tfp.distributions
 tree_map = jax.tree_util.tree_map
