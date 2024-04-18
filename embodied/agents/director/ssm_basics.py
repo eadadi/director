@@ -6,8 +6,8 @@ f32 = jnp.float32
 tfd = tfp.distributions
 tree_map = jax.tree_util.tree_map
 sg = lambda x: tree_map(jax.lax.stop_gradient, x)
-from . import jaxutils
-from . import ninjax as nj
+import jaxutils
+import ninjax as nj
 cast = jaxutils.cast_to_compute
 
 class RSSM_PROTO(nj.Module):
