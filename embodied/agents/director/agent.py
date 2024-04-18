@@ -146,7 +146,7 @@ class WorldModel(tfutils.Module):
 #    self.rssm = nets.RSSM_old(**config.rssm)
     rssms = { 'mimo': S3M }
     kws = { 'mimo': dict(**config.rssm, ssm_kwargs=dict(**config.ssm, **config.ssm_cell), ssm=config.ssm_type), }
-    self.rssm = rssms[config.ssm_type](**kws[config.rssm_type], name='rssm')
+    self.rssm = rssms[config.ssm_type](**kws[config.ssm_type], name='rssm')
     self.encoder = nets.MultiEncoder(shapes, **config.encoder)
     self.heads = {}
     self.heads['decoder'] = nets.MultiDecoder(shapes, **config.decoder)
