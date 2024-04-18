@@ -1,15 +1,16 @@
 defaults:
 
 # MY ADDITIONS ##################
-  platform: gpu
-  jit: True
-  precision: float16
-  prealloc: True
-  debug_nans: False
-  logical_cpus: 0
-  debug: False
-  policy_devices: [0]
-  train_devices: [0]
+  jax:
+    platform: gpu
+    jit: True
+    precision: float16
+    prealloc: True
+    debug_nans: False
+    logical_cpus: 0
+    debug: False
+    policy_devices: [0]
+    train_devices: [0]
 #################################
 
   # Trainer

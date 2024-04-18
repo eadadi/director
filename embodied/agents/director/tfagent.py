@@ -35,8 +35,8 @@ class TFAgent(tfutils.Module, embodied.Agent):
     print(f"\n\nMY ADDITIONS TO TFAGENT.PY\n\n")
     self.rng = np.random.default_rng(config.seed)
     available=jax.devices(self.config.platform)
-    self.train_devices = [available[i] for i in self.config.train_devices]
-    self.policy_devices = [available[i] for i in self.config.policy_devices]
+    self.train_devices = [available[i] for i in config.jax.train_devices]
+    self.policy_devices = [available[i] for i in config.jax.policy_devices]
     self.single_device = len(self.train_devices) == 1 and (self.policy_devices == self.train_devices)
     print(f'JAX devices: {self.train_devices}')
     print(f'Policy devices: {self.policy_devices}')
