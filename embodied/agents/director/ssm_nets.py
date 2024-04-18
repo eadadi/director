@@ -1,5 +1,5 @@
-from . import ninjax as nj
-from . import jaxutils
+import ninjax as nj
+import jaxutils
 
 from .ssm.siso import SISOBlock
 from .ssm.mimo import MIMOBlock
