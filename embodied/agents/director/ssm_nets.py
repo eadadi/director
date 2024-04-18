@@ -3,8 +3,8 @@ from . import jaxutils
 
 from .ssm.siso import SISOBlock
 from .ssm.mimo import MIMOBlock
-from . import ssm_basics.RSSM as RSSM
-from . import ssm_basics.Linear as Linear
+from ssm_basics import RSSM
+from ssm_basics import Linear
 
 import jax
 from jax import numpy as jnp
