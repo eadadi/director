@@ -1,8 +1,8 @@
 import ninjax as nj
 import jaxutils
 
-from .ssm.siso import SISOBlock
-from .ssm.mimo import MIMOBlock
+from ssm.siso import SISOBlock
+from ssm.mimo import MIMOBlock
 from ssm_basics import RSSM
 from ssm_basics import Linear
 
