@@ -3,7 +3,7 @@ from . import jaxutils
 
 from .ssm.siso import SISOBlock
 from .ssm.mimo import MIMOBlock
-from .nets import RSSM, Linear
+from .ssm_basics import RSSM, Linear
 
 import jax
 from jax import numpy as jnp
