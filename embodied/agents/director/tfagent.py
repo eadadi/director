@@ -13,6 +13,7 @@ from . import tfutils
 
 #ADDITIONS
 import numpy as np
+import jax
 
 #END
 
