@@ -11,6 +11,7 @@ from . import nets
 from . import tfagent
 from . import tfutils
 
+from ninjax import pure
 
 class Agent(tfagent.TFAgent):
 
@@ -36,7 +37,8 @@ class Agent(tfagent.TFAgent):
         self.expl_behavior.initial(len(obs['is_first'])),
         tf.zeros((len(obs['is_first']),) + self.act_space.shape)))
     self.initial_train_state = tf.function(lambda obs: (
-        self.wm.rssm.initial(len(obs['is_first']))))
+        #self.wm.rssm.initial(len(obs['is_first']))))
+        pure(self.wm.rssm.initial(len(obs['is_first'])))))
 
   @tf.function
   def policy(self, obs, state=None, mode='train'):
