@@ -140,7 +140,7 @@ class WorldModel(tfutils.Module):
     shapes = {k: tuple(v.shape) for k, v in obs_space.items()}
     shapes = {k: v for k, v in shapes.items() if not k.startswith('log_')}
     self.config = config
-    self.rssm = nets.RSSM(**config.rssm)
+    self.rssm = nets.RSSM_old(**config.rssm)
     self.encoder = nets.MultiEncoder(shapes, **config.encoder)
     self.heads = {}
     self.heads['decoder'] = nets.MultiDecoder(shapes, **config.decoder)

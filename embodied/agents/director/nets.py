@@ -11,7 +11,7 @@ from tensorflow.keras import mixed_precision as prec
 from . import tfutils
 
 
-class RSSM(tfutils.Module):
+class RSSM_old(tfutils.Module):
 
   def __init__(
       self, deter=1024, stoch=32, classes=32, unroll=True, initial='zeros',
