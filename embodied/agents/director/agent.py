@@ -12,10 +12,6 @@ from . import tfagent
 from . import tfutils
 
 
-""" New imports needed for the WM """
-from . import ssm_nets
-
-
 class Agent(tfagent.TFAgent):
 
   configs = yaml.YAML(typ='safe').load((
@@ -137,6 +133,8 @@ class Agent(tfagent.TFAgent):
     obs['cont'] = 1.0 - obs['is_terminal'].astype(tf.float32)
     return obs
 
+""" New imports needed for the WM """
+from . import ssm_nets
 from ssm_nets import S3M
 
 class WorldModel(tfutils.Module):
@@ -146,11 +144,9 @@ class WorldModel(tfutils.Module):
     shapes = {k: v for k, v in shapes.items() if not k.startswith('log_')}
     self.config = config
 #    self.rssm = nets.RSSM_old(**config.rssm)
-""" Define and use S3M """
     rssms = { 'mimo': S3M }
     kws = { 'mimo': dict(**config.rssm, ssm_kwargs=dict(**config.ssm, **config.ssm_cell), ssm=config.ssm_type), }
     self.rssm = rssms[config.ssm_type](**kws[config.rssm_type], name='rssm')
-
     self.encoder = nets.MultiEncoder(shapes, **config.encoder)
     self.heads = {}
     self.heads['decoder'] = nets.MultiDecoder(shapes, **config.decoder)
