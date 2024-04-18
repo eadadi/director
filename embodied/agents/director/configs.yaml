@@ -50,7 +50,10 @@ defaults:
 
   # World Model
   grad_heads: [decoder, reward, cont]
-  rssm: {units: 1024, deter: 1024, stoch: 32, classes: 32, act: elu, norm: layer, initial: learned2, unroll: True}
+
+  #rssm: {units: 1024, deter: 1024, stoch: 32, classes: 32, act: elu, norm: layer, initial: learned2, unroll: True}
+  rssm: {deter: 4096, units: 1024, hidden: 128, stoch: 32, classes: 32, act: silu, norm: layer, initial: learned, unimix: 0.01, unroll: True, action_clip: 1.0, winit: normal, fan: avg, nonrecurrent_enc: True}
+
   encoder: {mlp_keys: '.*', cnn_keys: '.*', act: elu, norm: layer, mlp_layers: 4, mlp_units: 512, cnn: simple, cnn_depth: 64, cnn_kernels: [4, 4, 4, 4]}
   decoder: {mlp_keys: '.*', cnn_keys: '.*', act: elu, norm: layer, mlp_layers: 4, mlp_units: 512, cnn: simple, cnn_depth: 64, cnn_kernels: [5, 5, 6, 6], image_dist: mse, inputs: [deter, stoch]}
   reward_head: {layers: 4, units: 512, act: elu, norm: layer, dist: symlog, outscale: 0.1, inputs: [deter, stoch]}
@@ -138,6 +141,27 @@ defaults:
   expl_dec: {layers: 4, units: 512, act: elu, norm: layer, dist: mse, outscale: 0.1}
   expl_kl: {impl: mult, scale: 0.1, target: 10.0, min: 1e-2, max: 1.0, vel: 0.1}
   expl_vae_elbo: False
+
+  # SSM
+  ssm_type: mimo
+  ssm_cell:
+    reset_mode: init
+    n_blocks: 8 # this is the num of DPLR blocks, not layer num
+    C_init: trunc_standard_normal
+    conj_sym: False
+    discretization: bilinear
+    clip_eigs: False
+    dt_min: 0.001
+    dt_max: 0.1
+  ssm: 
+    n_layers: 4 
+    prenorm: False
+    mlp: True
+    glu: True
+    dropout: 0.0
+    parallel: True
+    conv: False
+    use_norm: True
 
 dmlab:
 
