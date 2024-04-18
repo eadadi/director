@@ -149,13 +149,13 @@ class WorldModel(tfutils.Module):
 
 """ Define and use S3M """
     rssms = {
-        'mimo': S3M,
-        }
+            'mimo': S3M,
+            }
     kws = {
-        'mimo': dict(**config.rssm,
-                     ssm_kwargs=dict(**config.ssm, **config.ssm_cell),
-                     ssm=config.ssm_type),
-        }
+            'mimo': dict(**config.rssm,
+                         ssm_kwargs=dict(**config.ssm, **config.ssm_cell),
+                         ssm=config.ssm_type),
+            }
     self.rssm = rssms[config.ssm_type](**kws[config.rssm_type], name='rssm')
 
 
