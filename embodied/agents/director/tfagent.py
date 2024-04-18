@@ -11,6 +11,11 @@ except Exception:
 
 from . import tfutils
 
+#ADDITIONS
+import numpy as np
+
+#END
+
 
 class TFAgent(tfutils.Module, embodied.Agent):
 
@@ -23,6 +28,22 @@ class TFAgent(tfutils.Module, embodied.Agent):
       self.agent.__init__(obs_space, act_space, step, config)
     self._cache_fns = config.tf.jit and not self.strategy
     self._cached_fns = {}
+
+    #ADDITIONS
+
+    print(f"\n\nMY ADDITIONS TO TFAGENT.PY\n\n")
+    self.rng = np.random.default_rng(config.seed)
+    available=jax.devices(self.config.platform)
+    self.train_devices = [available[i] for i in self.config.train_devices]
+    self.policy_devices = [available[i] for i in self.config.policy_devices]
+    self.single_device = len(self.train_devices) == 1 and (self.policy_devices == self.train_devices)
+    print(f'JAX devices: {self.train_devices}')
+    print(f'Policy devices: {self.policy_devices}')
+    print(f'Single device: {self.single_device}')
+
+    print(f"\n\nEND MY ADDITIONS TO TFAGENT.PY\n\n")
+    #END
+
     return self
 
   def dataset(self, generator):
@@ -44,10 +65,26 @@ class TFAgent(tfutils.Module, embodied.Agent):
     act = self._convert_outs(act)
     return act, state
 
+# ADDITIONS:
+  def _next_rngs(self, devices, mirror=False, high=2 ** 63 - 1):
+    if len(devices) == 1:
+      return jax.device_put(self.rng.integers(high), devices[0])
+    elif mirror:
+      return jax.device_put_replicated(self.rng.integers(high), devices)
+    else:
+      return jax.device_put_sharded(
+        [self.rng.integers(high) for _ in devices], devices)
+
+# END
+
   def train(self, data, state=None):
     data = self._convert_inps(data)
     if state is None:
-      state = self._strategy_run(self.agent.initial_train_state, data)
+      #state = self._strategy_run(self.agent.initial_train_state, data)
+      state = self._strategy_run(self.agent.initial_train_state, data, rng=self._next_rngs(self.train_devices))
+      print(state)
+      print(state.type)
+
     fn = self.agent.train
     if self._cache_fns:
       key = 'train'
