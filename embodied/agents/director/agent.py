@@ -147,16 +147,9 @@ class WorldModel(tfutils.Module):
     self.config = config
 #    self.rssm = nets.RSSM_old(**config.rssm)
 """ Define and use S3M """
-    rssms = {
-        'mimo': S3M,
-        }
-    kws = {
-        'mimo': dict(**config.rssm,
-                     ssm_kwargs=dict(**config.ssm, **config.ssm_cell),
-                     ssm=config.ssm_type),
-        }
+    rssms = { 'mimo': S3M }
+    kws = { 'mimo': dict(**config.rssm, ssm_kwargs=dict(**config.ssm, **config.ssm_cell), ssm=config.ssm_type), }
     self.rssm = rssms[config.ssm_type](**kws[config.rssm_type], name='rssm')
-
 
     self.encoder = nets.MultiEncoder(shapes, **config.encoder)
     self.heads = {}
@@ -174,8 +167,8 @@ class WorldModel(tfutils.Module):
     metrics.update(self.model_opt(model_tape, model_loss, modules))
     return state, outputs, metrics
 
-def loss(self, data, state=None, training=False):
-  metrics = {}
+  def loss(self, data, state=None, training=False):
+    metrics = {}
     embed = self.encoder(data)
     post, prior = self.rssm.observe(
         embed, data['action'], data['is_first'], state)
@@ -221,8 +214,8 @@ def loss(self, data, state=None, training=False):
     last_state = {k: v[:, -1] for k, v in post.items()}
     return model_loss.mean(), last_state, out, metrics
 
-def imagine(self, policy, start, horizon):
-  first_cont = (1.0 - start['is_terminal']).astype(tf.float32)
+  def imagine(self, policy, start, horizon):
+    first_cont = (1.0 - start['is_terminal']).astype(tf.float32)
     keys = list(self.rssm.initial(1).keys())
     start = {k: v for k, v in start.items() if k in keys}
     start['action'] = policy(start)
@@ -232,17 +225,17 @@ def imagine(self, policy, start, horizon):
       state = self.rssm.img_step(prev, action)
       action = policy(state)
       return {**state, 'action': action}
-  traj = tfutils.scan(
-      step, tf.range(horizon), start, self.config.imag_unroll)
-  traj = {k: tf.concat([start[k][None], v], 0) for k, v in traj.items()}
+    traj = tfutils.scan(
+        step, tf.range(horizon), start, self.config.imag_unroll)
+    traj = {k: tf.concat([start[k][None], v], 0) for k, v in traj.items()}
     traj['cont'] = tf.concat([
-      first_cont[None], self.heads['cont'](traj).mean()[1:]], 0)
+        first_cont[None], self.heads['cont'](traj).mean()[1:]], 0)
     traj['weight'] = tf.math.cumprod(
         self.config.discount * traj['cont']) / self.config.discount
     return traj
 
-def imagine_carry(self, policy, start, horizon, carry):
-  first_cont = (1.0 - start['is_terminal']).astype(tf.float32)
+  def imagine_carry(self, policy, start, horizon, carry):
+    first_cont = (1.0 - start['is_terminal']).astype(tf.float32)
     keys = list(self.rssm.initial(1).keys())
     start = {k: v for k, v in start.items() if k in keys}
     keys += list(carry.keys()) + ['action']
@@ -271,8 +264,8 @@ def imagine_carry(self, policy, start, horizon, carry):
         self.config.imag_discount * cont) / self.config.imag_discount
     return traj
 
-def report(self, data):
-  report = {}
+  def report(self, data):
+    report = {}
     report.update(self.loss(data)[-1])
     context, _ = self.rssm.observe(
         self.encoder(data)[:6, :5], data['action'][:6, :5],
@@ -301,8 +294,8 @@ class ImagActorCritic(tfutils.Module):
     self.act_space = act_space
     self.config = config
     self.actor = nets.MLP(act_space.shape, **self.config.actor, dist=(
-      config.actor_dist_disc if act_space.discrete
-      else config.actor_dist_cont))
+        config.actor_dist_disc if act_space.discrete
+        else config.actor_dist_cont))
     self.grad = (
         config.actor_grad_disc if act_space.discrete
         else config.actor_grad_cont)
@@ -327,7 +320,7 @@ class ImagActorCritic(tfutils.Module):
 
   def train(self, imagine, start, context):
     policy = lambda s: self.actor(tf.nest.map_structure(
-      tf.stop_gradient, s)).sample()
+        tf.stop_gradient, s)).sample()
     with tf.GradientTape(persistent=True) as tape:
       traj = imagine(policy, start, self.config.imag_horizon)
     metrics = self.update(traj, tape)
@@ -414,20 +407,20 @@ class VFunction(tfutils.Module):
     metrics = {}
     reward = self.rewfn(traj)
     target = tf.stop_gradient(self.target(
-      traj, reward, self.config.critic_return)[0])
+        traj, reward, self.config.critic_return)[0])
     with tf.GradientTape() as tape:
       dist = self.net({k: v[:-1] for k, v in traj.items()})
       loss = -(dist.log_prob(target) * traj['weight'][:-1]).mean()
     metrics.update(self.opt(tape, loss, self.net))
     metrics.update({
-      'critic_loss': loss,
-      'imag_reward_mean': reward.mean(),
-      'imag_reward_std': reward.std(),
-      'imag_critic_mean': dist.mean().mean(),
-      'imag_critic_std': dist.mean().std(),
-      'imag_return_mean': target.mean(),
-      'imag_return_std': target.std(),
-      })
+        'critic_loss': loss,
+        'imag_reward_mean': reward.mean(),
+        'imag_reward_std': reward.std(),
+        'imag_critic_mean': dist.mean().mean(),
+        'imag_critic_std': dist.mean().std(),
+        'imag_return_mean': target.mean(),
+        'imag_return_std': target.std(),
+    })
     self.update_slow()
     return metrics
 
@@ -500,13 +493,13 @@ class QFunction(tfutils.Module):
       loss = -(dist.log_prob(target) * traj['weight'][:-1]).mean()
     metrics.update(self.opt(tape, loss, self.net))
     metrics.update({
-      'imag_reward_mean': reward.mean(),
-      'imag_reward_std': reward.std(),
-      'imag_critic_mean': dist.mean().mean(),
-      'imag_critic_std': dist.mean().std(),
-      'imag_target_mean': target.mean(),
-      'imag_target_std': target.std(),
-      })
+        'imag_reward_mean': reward.mean(),
+        'imag_reward_std': reward.std(),
+        'imag_critic_mean': dist.mean().mean(),
+        'imag_critic_std': dist.mean().std(),
+        'imag_target_mean': target.mean(),
+        'imag_target_std': target.std(),
+    })
     self.update_slow()
     return metrics
 
@@ -563,8 +556,8 @@ class TwinQFunction(tfutils.Module):
     traj = tf.nest.map_structure(tf.stop_gradient, traj)
     inps = {**traj, 'action': actor(traj).sample()}
     ret = tf.math.reduce_min([
-      self.net1(inps).mode(),
-      self.net2(inps).mode()], 0)[:-1]
+        self.net1(inps).mode(),
+        self.net2(inps).mode()], 0)[:-1]
     baseline = tf.zeros_like(ret)
     return ret, baseline
 
@@ -581,13 +574,13 @@ class TwinQFunction(tfutils.Module):
       loss = loss1 + loss2
     metrics.update(self.opt(tape, loss, [self.net1, self.net2]))
     metrics.update({
-      'imag_reward_mean': reward.mean(),
-      'imag_reward_std': reward.std(),
-      'imag_critic_mean': dist1.mean().mean(),
-      'imag_critic_std': dist2.mean().std(),
-      'imag_target_mean': target.mean(),
-      'imag_target_std': target.std(),
-      })
+        'imag_reward_mean': reward.mean(),
+        'imag_reward_std': reward.std(),
+        'imag_critic_mean': dist1.mean().mean(),
+        'imag_critic_std': dist2.mean().std(),
+        'imag_target_mean': target.mean(),
+        'imag_target_std': target.std(),
+    })
     self.update_slow()
     return metrics
 
@@ -597,8 +590,8 @@ class TwinQFunction(tfutils.Module):
     cont = traj['cont'][1:]
     disc = cont * self.config.discount
     value = tf.math.reduce_min([
-      self.target_net1({**traj, 'action': actor(traj).sample()}).mean(),
-      self.target_net2({**traj, 'action': actor(traj).sample()}).mean()], 0)
+        self.target_net1({**traj, 'action': actor(traj).sample()}).mean(),
+        self.target_net2({**traj, 'action': actor(traj).sample()}).mean()], 0)
     if self.config.pengs_qlambda:
       vals = [value[-1]]
       interm = reward + disc * value[1:] * (1 - self.config.return_lambda)
